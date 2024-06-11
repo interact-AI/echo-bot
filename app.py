@@ -64,10 +64,13 @@ BOT = EchoBot()
 async def messages(req: Request) -> Response:
     print("Received message")
     body = await req.json()
+    print(body)
     activity = Activity().deserialize(body)
     auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""
 
     response = await ADAPTER.process_activity(auth_header, activity, BOT.on_turn)
+    print("response: ")
+    print(response)
     if response:
         return json_response(data=response.body, status=response.status)
     return Response(status=HTTPStatus.OK)

@@ -76,9 +76,13 @@ async def messages(req: Request) -> Response:
         return json_response(data=response.body, status=response.status)
     return Response(status=HTTPStatus.OK)
 
+async def status(req: Request) -> Response:
+    return Response(status=HTTPStatus.OK)
+
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
+APP.router.add_get("/status", status)
 
 if __name__ == "__main__":
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)

@@ -62,7 +62,7 @@ BOT = EchoBot()
 
 # Listen for incoming requests on /api/messages
 async def messages(req: Request) -> Response:
-    # Main bot message handler.
+    print("Received message")
     body = await req.json()
     activity = Activity().deserialize(body)
     auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""

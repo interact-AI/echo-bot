@@ -77,7 +77,7 @@ async def messages(req: Request) -> Response:
     return Response(status=HTTPStatus.OK)
 
 async def status(req: Request) -> Response:
-    return Response(status=HTTPStatus.OK)
+    return Response(status=HTTPStatus.OK, text="Healthy")
 
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
@@ -89,6 +89,6 @@ if __name__ == "__main__":
     ssl_context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
 
     try:
-        web.run_app(APP, host="0.0.0.0", port=CONFIG.PORT, ssl_context=ssl_context)
+        web.run_app(APP, host="0.0.0.0" ,port=CONFIG.PORT, ssl_context=ssl_context)
     except Exception as error:
         raise error

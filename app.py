@@ -73,6 +73,7 @@ async def messages(req: Request) -> Response:
     return Response(status=HTTPStatus.OK)
 
 async def status(req: Request) -> Response:
+    print("Received status request")
     return Response(status=HTTPStatus.OK, text="Healthy")
 
 

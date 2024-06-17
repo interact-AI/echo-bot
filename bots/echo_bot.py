@@ -4,6 +4,7 @@
 from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
 from botbuilder.schema import ChannelAccount
 from langgraph_bot import execute_agent
+import time
 
 
 class EchoBot(ActivityHandler):
@@ -15,9 +16,11 @@ class EchoBot(ActivityHandler):
                 await turn_context.send_activity("Buenas que tal soy un bot de lenguaje natural, ¿en qué puedo ayudarte?")
 
     async def on_message_activity(self, turn_context: TurnContext):
+        initial_time = time.time()
         result = execute_agent(
             turn_context.activity.text, turn_context.activity.conversation.id
         )
+        print(f"Tiempo de respuesta de Agente entero: {time.time() - initial_time}")
         return await turn_context.send_activity(
             MessageFactory.text(result["final_response"])
         )

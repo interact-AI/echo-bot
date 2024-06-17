@@ -3,6 +3,7 @@
 
 import os
 import sys
+import time
 
 os.environ["GROQ_API_KEY"] = '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'
 os.environ["TAVILY_API_KEY"] = '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'
@@ -135,7 +136,9 @@ def product_inquiry_response(state):
 
     print("---REALIZANDO LLAMADA AL ENDPOINT DE PRODUCTOS---")
     # Realizar la solicitud HTTP para recuperar los datos del producto
+    initial_time = time.time()
     products = requests.get("https://dbmockapi.azurewebsites.net/products").json()
+    print(f"Tiempo de respuesta de GET: {time.time() - initial_time}")
     print("---DANDO RESPUESTA A LA CONSULTA DE PRODUCTOS---")
     initial_question = state['initial_question']
     num_steps = int(state['num_steps'])

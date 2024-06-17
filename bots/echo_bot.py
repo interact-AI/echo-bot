@@ -20,5 +20,5 @@ class EchoBot(ActivityHandler):
         )
         return await turn_context.send_activity(
             turn_context.
-            MessageFactory.text(f"{result["final_response"]}")
+            MessageFactory.text(result["final_response"])
         )

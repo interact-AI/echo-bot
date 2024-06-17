@@ -1,4 +1,22 @@
-﻿# EchoBot
+﻿## Branching
+
+We have created a repository on GitHub, the link to which can be found at the beginning of the report.
+
+The branching model we will use is GitFlow, which consists of utilizing two main branches:
+
+- **Main:** This is the primary branch that contains stable code ready for release.
+- **Develop:** This branch serves as the base for software development. It is used for ongoing work and to integrate changes from various feature branches.
+
+## Gitflow
+
+The workflow for adding new features to the repository is as follows:
+
+1. Create a new branch from `develop`, named according to the following format: `(change type)/(change name)`, for example: `feature/ticket-name`, `bugfix/ticket-name`, `hotfix/ticket-name`.
+2. Develop the feature in this branch.
+
+3. Pull request to `develop`, where you must briefly specify what was done in the branch and the design decisions made during these changes. Then, a code review is required from someone other than the person who made the requirement. If the changes are approved, merge them into `develop`. GitHub is configured to prevent merging pull requests that have not been approved.
+
+# EchoBot
 
 Bot Framework v4 echo bot sample.
 
@@ -7,9 +25,11 @@ This bot has been created using [Bot Framework](https://dev.botframework.com), i
 ## To try this sample
 
 - Clone the repository
+
 ```bash
 git clone https://github.com/Microsoft/botbuilder-samples.git
 ```
+
 - In a terminal, navigate to `botbuilder-samples\samples\python\02.echo-bot` folder
 - Activate your desired virtual environment
 - In the terminal, type `pip install -r requirements.txt`
@@ -29,7 +49,7 @@ git clone https://github.com/Microsoft/botbuilder-samples.git
 
 ## Interacting with the bot
 
-Enter text in the emulator.  The text will be echoed back by the bot.
+Enter text in the emulator. The text will be echoed back by the bot.
 
 ## Deploy the bot to Azure
 

@@ -3,7 +3,7 @@
 
 from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
 from botbuilder.schema import ChannelAccount
-from langgraph import execute_agent
+from langgraph_bot import execute_agent
 
 
 class EchoBot(ActivityHandler):

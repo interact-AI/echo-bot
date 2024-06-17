@@ -7,6 +7,5 @@ langchainhub
 langchain
 langgraph
 tavily-python
-langgraph.graph
 typing_extensions
 typing

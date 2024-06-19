@@ -152,16 +152,17 @@ def product_inquiry_response(state):
 
     return state
 
-custom_prompt_template = """Use the following pieces of information to answer the user's question.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
+custom_prompt_template = """Utiliza la siguiente información para responder la pregunta del usuario.
+Si no conoces la respuesta, devuelve "RESPUESTA_NO_ENCONTRADA". No trates de inventar una respuesta.
 
-Context: {context}
-Question: {question}
 
-Only return the helpful answer below and nothing else.
-Helpful answer:
+Contexto: {context}
+Pregunta: {question}
+
+
+Solo devuelve la respuesta útil a continuación y nada más.
+Respuesta útil:
 """
-
 def set_custom_prompt():
     """
     Prompt template for QA retrieval for each vectorstore
@@ -182,7 +183,7 @@ def retrieval_qa_chain(llm, prompt, vectorstore):
         llm=llm,
         chain_type="stuff",
         retriever=vectorstore.as_retriever(search_kwargs={'k': 3}),
-        return_source_documents=True,
+        return_source_documents=False,
         chain_type_kwargs={'prompt': prompt}
     )
     return qa_chain
@@ -205,13 +206,10 @@ def other_inquiry_response(state):
     initial_question = state['initial_question']
     
     response = chain.invoke({"query": initial_question})["result"]
+
+    if "RESPUESTA_NO_ENCONTRADA" in response:
+        response = "Lo siento, no tengo información sobre eso."
     
-    # Option to print source chunk documents
-    # source_documents = response["source_documents"]
-    # if source_documents:
-    #     print("Sources:")
-    #     for idx, doc in enumerate(source_documents):
-    #         print(f"Source {idx+1}: {doc.page_content}")
     state['conversation_history'].append({"rol": "asistente", "contenido": response})
     state.update({"final_response": response, "num_steps": num_steps})
 
@@ -330,15 +328,15 @@ def execute_agent(question, conversation_id):
 
 # NO BORRAR!! PARA PRUEBAS DESDE CONSOLA
 # 
-# def main():
-#     while True:
-#         question = input("Enter the next question: ")
-#         conversation_id = int(input("Enter the conversation ID: "))
-#         try:
-#             output = execute_agent(question, conversation_id)
-#             print(output)
-#         except Exception as e:
-#             print(f"Error: {str(e)}")
+def main():
+    while True:
+        question = input("Ingresar la pregunta: ")
+        conversation_id = int(input("Ingresar ID de conversación: "))
+        try:
+            output = execute_agent(question, conversation_id)
+            print(output)
+        except Exception as e:
+            print(f"Error: {str(e)}")
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()

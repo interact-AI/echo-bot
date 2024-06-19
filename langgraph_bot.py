@@ -330,15 +330,15 @@ def execute_agent(question, conversation_id):
 
 # NO BORRAR!! PARA PRUEBAS DESDE CONSOLA
 # 
-def main():
-    while True:
-        question = input("Enter the next question: ")
-        conversation_id = int(input("Enter the conversation ID: "))
-        try:
-            output = execute_agent(question, conversation_id)
-            print(output)
-        except Exception as e:
-            print(f"Error: {str(e)}")
+# def main():
+#     while True:
+#         question = input("Enter the next question: ")
+#         conversation_id = int(input("Enter the conversation ID: "))
+#         try:
+#             output = execute_agent(question, conversation_id)
+#             print(output)
+#         except Exception as e:
+#             print(f"Error: {str(e)}")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

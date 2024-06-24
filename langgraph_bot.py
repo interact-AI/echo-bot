@@ -54,6 +54,7 @@ class GraphState(TypedDict):
     final_response: str
     num_steps: int
     conversation_history: List[Dict[str, str]]
+    current_relevant_products: List[str]
 
 """## Nodes
 
@@ -115,6 +116,36 @@ def categorize_question(state: GraphState):
 
 import requests
 
+qdrant_url_topo = os.getenv("QDRANT_URL_RAG_MEDICAMENTOS")
+qdrant_api_key_topo = os.getenv("QDRANT_API_KEY_RAG_MEDICAMENTOS")
+client_topo = QdrantClient(api_key=qdrant_api_key_topo, url=qdrant_url_topo)
+chat_model_meds = ChatGroq(temperature=0, model_name="llama3-8b-8192")
+def qa_bot_meds():
+    embeddings = FastEmbedEmbeddings()
+    vectorstore = Qdrant(client=client_topo, embeddings=embeddings, collection_name="rag")
+    llm = chat_model_meds
+    qa_prompt = set_custom_prompt()
+    qa = retrieval_qa_chain(llm, qa_prompt, vectorstore)
+    return qa
+
+def product_data_search(state):
+    print("---BUSCANDO DATOS DE PRODUCTO EN RAG---")
+    num_steps = int(state['num_steps'])
+    num_steps += 1
+
+    chain = qa_bot_meds()
+
+    initial_question = state['initial_question']
+    response = chain.invoke({"query": initial_question})
+    # Option to print source chunk documents
+    source_documents = response["source_documents"]
+    if source_documents:
+        print("Sources:")
+        for idx, doc in enumerate(source_documents):
+            print(f"Source {idx+1}: {doc.page_content}")
+    state.update({"current_relevant_products": response["result"]})
+    return state
+
 def product_inquiry_response(state):
     # Crear una plantilla de prompt que incluya los datos del producto
     prompt = PromptTemplate(
@@ -128,10 +159,11 @@ def product_inquiry_response(state):
         input_variables=["products", "initial_question"],
     )
 
-    print("---REALIZANDO LLAMADA AL ENDPOINT DE PRODUCTOS---")
     # Realizar la solicitud HTTP para recuperar los datos del producto
     initial_time = time.time()
-    products = requests.get("https://dbmockapi.azurewebsites.net/products").json()
+    products = state['current_relevant_products']
+    print(products)
+
     print(f"Tiempo de respuesta de GET: {time.time() - initial_time}")
     print("---DANDO RESPUESTA A LA CONSULTA DE PRODUCTOS---")
     initial_question = state['initial_question']
@@ -201,11 +233,11 @@ def other_inquiry_response(state):
     num_steps += 1
 
     chain = qa_bot()
-    
+
     initial_question = state['initial_question']
-    
+
     response = chain.invoke({"query": initial_question})["result"]
-    
+
     # Option to print source chunk documents
     # source_documents = response["source_documents"]
     # if source_documents:
@@ -267,8 +299,8 @@ def route_to_respond(state):
     else:
         # Manejar categoría inesperada (error nodo clasificador)
         print("---CATEGORÍA INESPERADA---")
-        return "state_printer" 
-    
+        return "state_printer"
+
 """## Build the Graph
 
 ### Add Nodes
@@ -278,6 +310,7 @@ workflow = StateGraph(GraphState)
 
 # Define the nodes
 workflow.add_node("categorize_question", categorize_question)
+workflow.add_node("product_data_search", product_data_search)
 workflow.add_node("product_inquiry_response", product_inquiry_response)
 workflow.add_node("state_printer", state_printer)
 workflow.add_node("other_inquiry_response", other_inquiry_response)
@@ -290,11 +323,12 @@ workflow.add_conditional_edges(
     "categorize_question",
     route_to_respond,
     {
-        "product_inquiry_response": "product_inquiry_response",
+        "product_inquiry_response": "product_data_search",
         "other_inquiry_response": "other_inquiry_response",
     },
 )
 
+workflow.add_edge("product_data_search", "product_inquiry_response")
 workflow.add_edge("product_inquiry_response", "state_printer")
 workflow.add_edge("other_inquiry_response", "state_printer")
 workflow.add_edge("state_printer", END)
@@ -329,16 +363,16 @@ def execute_agent(question, conversation_id):
 
 
 # NO BORRAR!! PARA PRUEBAS DESDE CONSOLA
-# 
-# def main():
-#     while True:
-#         question = input("Enter the next question: ")
-#         conversation_id = int(input("Enter the conversation ID: "))
-#         try:
-#             output = execute_agent(question, conversation_id)
-#             print(output)
-#         except Exception as e:
-#             print(f"Error: {str(e)}")
 
-# if __name__ == "__main__":
-#     main()
+def main():
+    while True:
+        question = input("Enter the next question: ")
+        conversation_id = int(input("Enter the conversation ID: "))
+        try:
+            output = execute_agent(question, conversation_id)
+            print(output)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()

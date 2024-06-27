@@ -17,7 +17,6 @@ from botbuilder.schema import Activity, ActivityTypes
 
 from bots import EchoBot
 from config import DefaultConfig
-import ssl
 
 CONFIG = DefaultConfig()
 
@@ -59,24 +58,26 @@ ADAPTER.on_turn_error = on_error
 # Create the Bot
 BOT = EchoBot()
 
+async def status(req: Request) -> Response:
+    print("Received status request")
+    return Response(status=HTTPStatus.OK, text="Healthy")
+
 
 # Listen for incoming requests on /api/messages
 async def messages(req: Request) -> Response:
-    print("Received message")
-    body = await req.json()
-    print(body)
+    # Main bot message handler.
+    if "application/json" in req.headers["Content-Type"]:
+        body = await req.json()
+    else:
+        return Response(status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+
     activity = Activity().deserialize(body)
     auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""
 
     response = await ADAPTER.process_activity(auth_header, activity, BOT.on_turn)
-
     if response:
         return json_response(data=response.body, status=response.status)
     return Response(status=HTTPStatus.OK)
-
-async def status(req: Request) -> Response:
-    print("Received status request")
-    return Response(status=HTTPStatus.OK, text="Healthy")
 
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
@@ -84,10 +85,7 @@ APP.router.add_post("/api/messages", messages)
 APP.router.add_get("/status", status)
 
 if __name__ == "__main__":
-    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
-
     try:
-        web.run_app(APP, host="0.0.0.0" ,port=CONFIG.PORT, ssl_context=ssl_context)
+        web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error

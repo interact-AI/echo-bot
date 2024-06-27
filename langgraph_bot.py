@@ -2,7 +2,6 @@
 """LangGraph Memory Test"""
 
 import os
-import sys
 import time
 
 os.environ["GROQ_API_KEY"] = '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'

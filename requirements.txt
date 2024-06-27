@@ -1,4 +1,4 @@
-botbuilder-integration-aiohttp>=4.15.0
+botbuilder-integration-aiohttp
 langchain-groq
 duckduckgo-search
 langchain_community

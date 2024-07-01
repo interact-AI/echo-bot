@@ -21,6 +21,14 @@ conversation_with_summary = ConversationChain(
     llm=GROQ_LLM,
 )
 
+GROQ_LLM = ChatGroq(
+    model="llama3-8b-8192",
+)
+
+conversation_with_summary_8b = ConversationChain(
+    llm=GROQ_LLM,
+)
+
 # llama3-70b-8192
 # llama3-8b-8192
 
@@ -64,6 +72,7 @@ class GraphState(TypedDict):
 """
 
 def categorize_question(state: GraphState):
+    initial_time = time.time()
     # Definir la plantilla del prompt
     prompt_template = """\
     Eres un Agente Clasificador de Preguntas que responde en español. Eres un experto en entender de qué trata una pregunta y eres capaz de categorizarla de manera útil.
@@ -99,7 +108,7 @@ def categorize_question(state: GraphState):
     combined_prompt += prompt_template.format(initial_question=initial_question)
 
     # Invocar la cadena de conversación con el prompt combinado
-    respuesta = conversation_with_summary.predict(input=combined_prompt)
+    respuesta = conversation_with_summary_8b.predict(input=combined_prompt)
     # Analizar la respuesta para extraer la etiqueta de categoría
     if "producto" in respuesta.lower():
         categoria_pregunta = "producto"
@@ -110,12 +119,15 @@ def categorize_question(state: GraphState):
 
     state.update({"question_category": categoria_pregunta, "num_steps": num_steps})
 
+    print(f"Tiempo de respuesta de NODO: {time.time() - initial_time}")
+
     return state
 
 
 import requests
 
 def product_inquiry_response(state):
+    initial_time = time.time()
     # Crear una plantilla de prompt que incluya los datos del producto
     prompt = PromptTemplate(
         template="""\
@@ -130,9 +142,7 @@ def product_inquiry_response(state):
 
     print("---REALIZANDO LLAMADA AL ENDPOINT DE PRODUCTOS---")
     # Realizar la solicitud HTTP para recuperar los datos del producto
-    initial_time = time.time()
     products = requests.get("https://dbmockapi.azurewebsites.net/products").json()
-    print(f"Tiempo de respuesta de GET: {time.time() - initial_time}")
     print("---DANDO RESPUESTA A LA CONSULTA DE PRODUCTOS---")
     initial_question = state['initial_question']
     num_steps = int(state['num_steps'])
@@ -150,6 +160,8 @@ def product_inquiry_response(state):
 
     state.update({"final_response": response, "num_steps": num_steps})
 
+    print(f"Tiempo de respuesta de NODO: {time.time() - initial_time}")
+    
     return state
 
 custom_prompt_template = """Utiliza la siguiente información para responder la pregunta del usuario.
@@ -197,6 +209,8 @@ def qa_bot():
     return qa
 
 def other_inquiry_response(state):
+
+    initial_time = time.time()
     print("---RESPONDIENDO A CONSULTA DESDE RAG---")
     num_steps = int(state['num_steps'])
     num_steps += 1
@@ -212,6 +226,8 @@ def other_inquiry_response(state):
     
     state['conversation_history'].append({"rol": "asistente", "contenido": response})
     state.update({"final_response": response, "num_steps": num_steps})
+
+    print(f"Tiempo de respuesta de NODO: {time.time() - initial_time}")
 
     return state
 

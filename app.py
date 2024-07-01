@@ -79,12 +79,16 @@ async def messages(req: Request) -> Response:
         return json_response(data=response.body, status=response.status)
     return Response(status=HTTPStatus.OK)
 
+async def ping(req: Request) -> Response:
+    print("Received ping request")
+    return Response(status=HTTPStatus.OK, text="pong")
 
 
 def init_func(argv):
     APP = Application(middlewares=[aiohttp_error_middleware])
     APP.router.add_post("/api/messages", messages)
     APP.router.add_get("/status", status)
+    APP.router.add_get("/ping", ping)
     return APP
 
 if __name__ == "__main__":
